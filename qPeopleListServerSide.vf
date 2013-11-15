@@ -1,0 +1,122 @@
+<apex:page standardController="qPeople__c" extensions="qPeopleListExtension2" action="{!searchPeople}" >
+    <apex:sectionHeader Title="Search People (Server Side)"/>
+    <apex:messages style="color:red"/>
+
+    <style>
+        .search{
+            font-size:14pt;
+            margin-right: 20px;    
+        }
+        .fyi{
+            color:red;
+            font-style:italic;
+        }
+        .label{
+            margin-right:10px;
+            font-weight:bold;
+        }
+    </style>
+    
+    <script type='text/javascript'>
+    
+        // This script assists the search bar functionality
+        // It will execute a search only after the user has stopped typing for more than 1 second
+        // To raise the time between when the user stops typing and the search, edit the following variable:
+        
+        var waitTime = 1;
+        
+    
+        var countDown = waitTime+1;
+        var started = false;
+        
+        function resetTimer(){
+        
+            countDown=waitTime+1;
+            
+            if(started==false){
+                started=true;
+                runCountDown();
+            }
+        }
+        
+        function runCountDown(){
+        
+            countDown--;
+            
+            if(countDown<=0){
+                fetchResults();
+                started=false;
+            }
+            else{
+                window.setTimeout(runCountDown,1000);
+            }
+        }
+    
+    </script>
+   
+  
+    <apex:form >
+    
+        <apex:outputPanel id="mainBody">
+
+<!-- Search section below -->
+    
+            <apex:pageBlock >
+            
+                <apex:outputPanel styleClass="search">
+                    Search for People:
+                </apex:outputPanel>
+
+                <apex:actionRegion renderRegionOnly="false" immediate="true">
+                
+                    <apex:actionFunction name="fetchResults" action="{!searchPeople}" reRender="searchResults" status="searchStatus"/>
+                    
+                    <!-- here we invoke the scripting to get out fancy 'no button' search bar to work -->
+                    <apex:inputText value="{!searchString}" onkeydown="if(event.keyCode==13){this.blur();}else{resetTimer();}" style="width:300px"/>
+                    &nbsp;&nbsp;
+                    <i>
+                        <!-- actionStatus component makes it easy to let the user know when a search is underway -->
+                        <apex:actionstatus id="searchStatus">
+                            <apex:facet name="start">
+                                <div class="waitingSearchDiv" id="el_loading" style="background-color: #fbfbfb;
+                                       height: 100%;opacity:0.85;width:100%;"> 
+                                    <div class="waitingHolder" style="top: 174.2px; width: 91px;">
+                                        <img class="waitingImage" src="/img/loading.gif" title="Please Wait..." />
+                                        <span class="waitingDescription">Searching, Please Wait...</span>
+                                    </div>
+                                </div>
+                            </apex:facet>
+                        </apex:actionstatus>
+                
+                    </i>
+                    
+                </apex:actionRegion>
+            
+                <br/>
+                <br/>
+            
+                <apex:outputPanel id="searchResults">
+                
+                    <apex:pageBlockTable value="{!PeopleList}" var="q">
+                        <apex:column headerValue="First Name" value="{!q.First_Name__c}" />
+                        <apex:column headerValue="Last Name" value="{!q.Last_Name__c}" />
+                        <apex:column headerValue="Company Name" value="{!q.Company_Name__c}" />
+                        <apex:column headerValue="Address" value="{!q.Address__c}" />
+                        <apex:column headerValue="City" value="{!q.City__c}" />
+                        <apex:column headerValue="State" value="{!q.State__c}" />
+                        <apex:column headerValue="Zip" value="{!q.zip__c}" />
+                        <apex:column headerValue="Email" value="{!q.Email__c}" />
+                        <apex:column headerValue="Phone" value="{!q.Phone__c}" />
+                    </apex:pageBlockTable>
+                    
+                    <!-- We put up a warning if results exceed 100 rows -->
+                    <apex:outputPanel styleClass="fyi" rendered="{!overLimit}">
+                        <br/>
+                        Your search returned over 100 results, use a more specific search string if you do not see the desired person.
+                        <br/>
+                    </apex:outputPanel>
+                </apex:outputPanel>
+            </apex:pageBlock>
+        </apex:outputPanel>
+    </apex:form>
+</apex:page>
